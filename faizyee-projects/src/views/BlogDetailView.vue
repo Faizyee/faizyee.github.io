@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useHead } from '@vueuse/head' // <-- Diimpor untuk manajemen Head/SEO dinamis
 import { supabase } from '../lib/supabaseClient'
 import type { Blog } from '../types/portfolio'
 import { useAds } from '../composables/useAds'
@@ -24,6 +25,50 @@ const loading = ref<boolean>(true)
 const notFound = ref<boolean>(false)
 
 const { ads, fetchActiveAds } = useAds()
+
+// === DINAMIS HTML HEAD (SEO & OPEN GRAPH) ===
+useHead({
+  title: computed(() => blog.value?.title ? `${blog.value.title} - Faizyee Blog` : 'Memuat Artikel...'),
+  meta: [
+    { 
+      name: 'description', 
+      content: computed(() => {
+        if (!blog.value?.content) return 'Baca artikel terbaru seputar teknologi dan pemrograman di Faizyee.'
+        const plain = blog.value.content.replace(/<[^>]*>?/gm, '')
+        return plain.length > 150 ? plain.substring(0, 150) + '...' : plain
+      }) 
+    },
+    // Open Graph / Media Sosial (WhatsApp, Facebook, LinkedIn)
+    { property: 'og:type', content: 'article' },
+    { property: 'og:title', content: computed(() => blog.value?.title || 'Faizyee Blog') },
+    { 
+      property: 'og:description', 
+      content: computed(() => {
+        if (!blog.value?.content) return 'Baca artikel terbaru seputar teknologi dan pemrograman di Faizyee.'
+        const plain = blog.value.content.replace(/<[^>]*>?/gm, '')
+        return plain.length > 150 ? plain.substring(0, 150) + '...' : plain
+      }) 
+    },
+    { property: 'og:image', content: computed(() => blog.value?.cover_image || 'https://faizyee.github.io/og-image.jpg') },
+    { property: 'og:url', content: computed(() => `https://faizyee.github.io/blog/${route.params.slug}`) },
+    
+    // Twitter Card
+    { name: 'twitter:card', content: 'summary_large_image' },
+    { name: 'twitter:title', content: computed(() => blog.value?.title || 'Faizyee Blog') },
+    { 
+      name: 'twitter:description', 
+      content: computed(() => {
+        if (!blog.value?.content) return 'Baca artikel terbaru seputar teknologi dan pemrograman di Faizyee.'
+        const plain = blog.value.content.replace(/<[^>]*>?/gm, '')
+        return plain.length > 150 ? plain.substring(0, 150) + '...' : plain
+      }) 
+    },
+    { name: 'twitter:image', content: computed(() => blog.value?.cover_image || 'https://faizyee.github.io/og-image.jpg') }
+  ],
+  link: [
+    { rel: 'canonical', href: computed(() => `https://faizyee.github.io/blogs/${route.params.slug}`) }
+  ]
+})
 
 // === STATE ALAT BANTU BACA: FONT SIZE (A++ / A--) ===
 const fontSizePx = ref<number>(16) // Ukuran font awal (16px)
@@ -203,7 +248,6 @@ const processedArticleBlocks = computed(() => {
   const title = blog.value.title || ''
   let currentOffset = 0
 
-  // Menggunakan wrapHtmlWords yang benar
   const wrappedTitleObj = wrapHtmlWords(title, currentOffset)
   currentOffset = wrappedTitleObj.totalLength + 2 // +2 untuk spasi/titik antar judul & isi
 
@@ -245,7 +289,7 @@ const processedArticleBlocks = computed(() => {
 watch(activeCharIndex, (newIndex) => {
   if (audioState.value === 'idle') {
     const words = document.querySelectorAll('.tts-word')
-    words.forEach(el => el.classList.remove('bg-emerald-200', 'dark:bg-emerald-800', 'text-slate-900', 'dark:text-white', 'rounded', 'px-0.5', 'font-semibold'))
+    words.forEach(el => el.classList.remove('bg-emerald-200', 'dark:bg-emerald-800', 'text-slate-900', 'dark:!text-white', 'rounded', 'px-0.5', 'font-semibold'))
     return
   }
 
@@ -255,9 +299,9 @@ watch(activeCharIndex, (newIndex) => {
     const end = parseInt(el.getAttribute('data-end') || '0', 10)
     
     if (newIndex >= start && newIndex < end) {
-      el.classList.add('bg-emerald-200', 'dark:bg-emerald-800', 'text-slate-900', 'dark:text-white', 'rounded', 'px-0.5', 'font-semibold')
+      el.classList.add('bg-emerald-200', 'dark:bg-emerald-800', 'text-slate-900', 'dark:!text-white', 'rounded', 'px-0.5', 'font-semibold')
     } else {
-      el.classList.remove('bg-emerald-200', 'dark:bg-emerald-800', 'text-slate-900', 'dark:text-white', 'rounded', 'px-0.5', 'font-semibold')
+      el.classList.remove('bg-emerald-200', 'dark:bg-emerald-800', 'text-slate-900', 'dark:!text-white', 'rounded', 'px-0.5', 'font-semibold')
     }
   })
 })
@@ -311,7 +355,7 @@ onMounted(async () => {
 
       <!-- Not Found State -->
       <div v-else-if="notFound" class="text-center py-16 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 shadow-xs">
-        <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-2">Artikel Tidak Ditemukan</h2>
+        <h2 class="text-xl font-semibold text-slate-900 dark:!text-white mb-2">Artikel Tidak Ditemukan</h2>
         <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">Maaf, artikel yang Anda cari tidak tersedia atau telah dihapus.</p>
         <router-link to="/blogs" class="inline-block bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white text-xs font-medium px-5 py-2.5 rounded-lg transition">
           Lihat Artikel Lain
@@ -319,7 +363,7 @@ onMounted(async () => {
       </div>
 
       <!-- Article Content -->
-      <article v-else-if="blog" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs">
+      <article v-else-if="blog" class="bg-white dark:bg-slate-900 text-slate-900 dark:!text-white rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs">
         
         <!-- Cover Image -->
         <div v-if="blog.cover_image" class="w-full h-64 sm:h-80 overflow-hidden bg-slate-100 dark:bg-slate-800">
@@ -331,7 +375,7 @@ onMounted(async () => {
           <!-- Article Header -->
           <header class="mb-6">
             <h1 
-              class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight leading-tight mb-3"
+              class="text-2xl sm:text-3xl font-bold text-slate-900 dark:!text-white tracking-tight leading-tight mb-3"
               v-html="processedArticleBlocks.wrappedTitleHtml"
             ></h1>
             <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
@@ -433,7 +477,7 @@ onMounted(async () => {
             </div>
             <div class="mt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div class="space-y-1.5 pr-2">
-                <h4 class="text-sm font-semibold text-slate-900 dark:text-white">{{ headerAd.title }}</h4>
+                <h4 class="text-sm font-semibold text-slate-900 dark:!text-white">{{ headerAd.title }}</h4>
                 <p v-if="headerAd.description" class="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
                   {{ headerAd.description }}
                 </p>
@@ -472,7 +516,7 @@ onMounted(async () => {
                 </a>
                 <div class="mt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div class="space-y-1.5 pr-2">
-                    <h4 class="text-sm font-semibold text-slate-900 dark:text-white">{{ block.adData?.title }}</h4>
+                    <h4 class="text-sm font-semibold text-slate-900 dark:!text-white">{{ block.adData?.title }}</h4>
                     <p v-if="block.adData?.description" class="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
                       {{ block.adData?.description }}
                     </p>
@@ -496,12 +540,12 @@ onMounted(async () => {
               </div>
               <div class="mt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div class="space-y-1.5 pr-2">
-                  <h4 class="text-sm font-semibold text-slate-900 dark:text-white">{{ footerAd.title }}</h4>
+                  <h4 class="text-sm font-semibold text-slate-900 dark:!text-white">{{ footerAd.title }}</h4>
                   <p v-if="footerAd.description" class="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
                     {{ footerAd.description }}
                   </p>
                 </div>
-                <a :href="footerAd.target_url || '#'" target="_blank" rel="noopener noreferrer" class="shrink-0 bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white !text-white no-underline text-xs font-medium px-4 py-2 rounded-lg transition text-center w-full sm:w-auto">
+                <a :href="footerAd.target_url || '#'" target="_blank" rel="noopener noreferrer" class="shrink-0 bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-700 !text-white no-underline text-xs font-medium px-4 py-2 rounded-lg transition text-center w-full sm:w-auto">
                   {{ footerAd.button_text || 'Kunjungi' }}
                 </a>
               </div>

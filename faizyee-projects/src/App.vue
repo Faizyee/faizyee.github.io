@@ -1,11 +1,24 @@
 <!-- App.vue -->
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { useHead } from '@vueuse/head'
+import { usePortfolio } from '@/composables/usePortfolio' // <-- Diimpor untuk akses data profil global
 
 const route = useRoute()
 const isMobileMenuOpen = ref(false)
 const isDark = ref(false)
+
+const { profile, fetchAllData } = usePortfolio()
+
+// Ambil data profil secara global saat aplikasi pertama kali dimuat
+onMounted(async () => {
+  try {
+    await fetchAllData()
+  } catch (error) {
+    console.error('Gagal memuat data global:', error)
+  }
+})
 
 // Cek tema yang tersimpan di localStorage atau preferensi sistem saat dimuat
 onMounted(() => {
@@ -17,6 +30,31 @@ onMounted(() => {
     isDark.value = false
     document.documentElement.classList.remove('dark')
   }
+})
+
+// === KONFIGURASI GLOBAL HEAD (FAVICON DINAMIS, DOMAIN, & THEME COLOR) ===
+useHead({
+  title: computed(() => profile.value?.full_name && profile.value?.title ? `${profile.value?.full_name} - ${profile.value?.title}` : 'Faizyee - Portofolio & Blog Teknologi'),
+  link: [
+    { 
+      rel: 'icon', 
+      type: 'image/x-icon', 
+      href: computed(() => profile.value?.avatar_url || 'https://faizyee.github.io/favicon.ico') 
+    },
+    { 
+      rel: 'shortcut icon', 
+      href: computed(() => profile.value?.avatar_url || 'https://faizyee.github.io/favicon.ico') 
+    },
+    { rel: 'canonical', href: 'https://faizyee.github.io' }
+  ],
+  meta: [
+    { property: 'og:site_name', content: computed(() => profile.value?.full_name || 'Faizyee Portfolio & Blog') },
+    { property: 'og:url', content: 'https://faizyee.github.io' },
+    { 
+      name: 'theme-color', 
+      content: computed(() => isDark.value ? '#0f172a' : '#ffffff') 
+    }
+  ]
 })
 
 // Fungsi untuk mengganti tema

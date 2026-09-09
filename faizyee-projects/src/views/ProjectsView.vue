@@ -8,7 +8,9 @@ import {
   FolderOpen, 
   SearchX, 
   ChevronLeft, 
-  ChevronRight 
+  ChevronRight,
+  ExternalLink, 
+  FolderGit2
 } from 'lucide-vue-next'
 
 const { projects, getProjects } = usePortfolio()
@@ -173,23 +175,11 @@ onMounted(async () => {
               </div>
 
               <div class="flex items-center gap-3 pt-2 border-t border-slate-100 dark:border-slate-800 mt-auto">
-                <a 
-                  v-if="project.demo_url" 
-                  :href="project.demo_url" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  class="flex-1 bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white text-xs font-medium py-2 px-3 rounded-lg text-center transition"
-                >
-                  Live Demo
+                <a v-if="project.demo_url" :href="project.demo_url" target="_blank" rel="noopener" class="flex-1 bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white text-xs font-medium py-2 px-3 rounded-lg text-center transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
+                  <ExternalLink class="w-3.5 h-3.5" /> Live Demo
                 </a>
-                <a 
-                  v-if="project.repo_url" 
-                  :href="project.repo_url" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  class="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-medium py-2 px-3 rounded-lg text-center transition"
-                >
-                  Repository
+                <a v-if="project.repo_url" :href="project.repo_url" target="_blank" rel="noopener" class="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-medium py-2 px-3 rounded-lg text-center transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
+                  <FolderGit2 class="w-3.5 h-3.5" /> Repository
                 </a>
               </div>
             </div>
