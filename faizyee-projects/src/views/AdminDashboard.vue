@@ -1073,7 +1073,7 @@ onMounted(() => {
                     <option value="" disabled>Pilih posisi...</option>
                     <option value="header">Header</option>
                     <option value="footer">Footer</option>
-                    <option value="content_inline">Inline Konten</option>
+                    <option value="in-content">In-Content</option>
                   </select>
                 </div>
               </div>

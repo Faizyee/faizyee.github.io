@@ -139,9 +139,11 @@ const pauseAudio = () => {
 
 const restartAudio = () => {
   window.speechSynthesis.cancel()
-  audioState.value = 'idle'
+  audioState.value = 'playing'
   activeCharIndex.value = 0
-  playAudio()
+  setTimeout(() => {
+    playAudio()
+  }, 150)
 }
 
 const stopAudio = () => {
@@ -584,21 +586,21 @@ onMounted(async () => {
 .article-body :deep(img) { max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1.5rem auto; }
 
 /* Dark Mode Overrides untuk TipTap / Rich Text Body */
-:global(.dark) .article-body :deep(h1),
-:global(.dark) .article-body :deep(h2),
-:global(.dark) .article-body :deep(h3),
-:global(.dark) .article-body :deep(h4) {
+.dark .article-body :deep(h1),
+.dark .article-body :deep(h2),
+.dark .article-body :deep(h3),
+.dark .article-body :deep(h4) {
   color: #f8fafc;
 }
-:global(.dark) .article-body :deep(blockquote) {
+.dark .article-body :deep(blockquote) {
   border-left-color: #10b981;
   color: #94a3b8;
 }
-:global(.dark) .article-body :deep(code) {
+.dark .article-body :deep(code) {
   background-color: #1e293b;
   color: #f8fafc;
 }
-:global(.dark) .article-body :deep(pre) {
+.dark .article-body :deep(pre) {
   background-color: #090d16;
   border: 1px solid #1e293b;
   color: #e2e8f0;
@@ -611,9 +613,9 @@ onMounted(async () => {
   color: #047857; 
   text-decoration: underline; 
 }
-:global(.dark) .article-body :deep(p a),
-:global(.dark) .article-body :deep(li a),
-:global(.dark) .article-body :deep(blockquote a) {
+.dark .article-body :deep(p a),
+.dark .article-body :deep(li a),
+.dark .article-body :deep(blockquote a) {
   color: #34d399;
 }
 </style>
