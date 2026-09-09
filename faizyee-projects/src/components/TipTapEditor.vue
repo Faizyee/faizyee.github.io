@@ -39,7 +39,7 @@ const editor = useEditor({
     Link.configure({
       openOnClick: false,
       HTMLAttributes: {
-        class: 'text-emerald-600 font-medium underline hover:text-emerald-800 transition-colors'
+        class: 'text-emerald-600 dark:text-emerald-400 font-medium underline hover:text-emerald-800 dark:hover:text-emerald-300 transition-colors'
       }
     }),
     Placeholder.configure({
@@ -130,17 +130,17 @@ defineExpose({
 </script>
 
 <template>
-  <div class="tiptap-editor-wrapper rounded-xl border border-emerald-900/10 bg-white shadow-sm overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-600 transition-all">
+  <div class="tiptap-editor-wrapper rounded-xl border border-emerald-900/10 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-600 dark:focus-within:border-emerald-500 transition-all text-slate-800 dark:text-slate-100 font-sans">
     
-    <!-- Toolbar Hijau Kalem -->
-    <div class="editor-toolbar flex flex-wrap items-center gap-1.5 p-2.5 border-b border-emerald-950/5 bg-[#f4f7f5]/80 backdrop-blur sticky top-0 z-10">
+    <!-- Toolbar -->
+    <div class="editor-toolbar flex flex-wrap items-center gap-1.5 p-2.5 border-b border-emerald-950/5 dark:border-slate-800 bg-[#f4f7f5]/80 dark:bg-slate-900/90 backdrop-blur sticky top-0 z-10">
       
       <!-- Heading Dropdown -->
-      <div class="flex items-center border-r border-emerald-900/10 pr-2 mr-0.5">
+      <div class="flex items-center border-r border-emerald-900/10 dark:border-slate-800 pr-2 mr-0.5">
         <select 
           @change="onHeadingChange" 
           :value="getCurrentHeadingValue()"
-          class="text-xs font-medium bg-white border border-emerald-900/15 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer"
+          class="text-xs font-medium bg-white dark:bg-slate-800 border border-emerald-900/15 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer"
         >
           <option value="paragraph">Teks Normal</option>
           <option value="1">Heading 1</option>
@@ -151,7 +151,7 @@ defineExpose({
       </div>
 
       <!-- Format Dasar -->
-      <div class="flex items-center gap-0.5 border-r border-emerald-900/10 pr-2 mr-0.5">
+      <div class="flex items-center gap-0.5 border-r border-emerald-900/10 dark:border-slate-800 pr-2 mr-0.5">
         <button
           type="button"
           @click="editor?.chain().focus().toggleBold().run()"
@@ -203,7 +203,7 @@ defineExpose({
       </div>
 
       <!-- Color Picker -->
-      <div class="flex items-center gap-1 border-r border-emerald-900/10 pr-2 mr-0.5" title="Warna Teks">
+      <div class="flex items-center gap-1 border-r border-emerald-900/10 dark:border-slate-800 pr-2 mr-0.5" title="Warna Teks">
         <label class="toolbar-btn cursor-pointer flex items-center justify-center relative">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10M12 3v18m-4-4h8"/></svg>
           <input 
@@ -215,7 +215,7 @@ defineExpose({
       </div>
 
       <!-- Perataan Teks (Alignment) -->
-      <div class="flex items-center gap-0.5 border-r border-emerald-900/10 pr-2 mr-0.5">
+      <div class="flex items-center gap-0.5 border-r border-emerald-900/10 dark:border-slate-800 pr-2 mr-0.5">
         <button
           type="button"
           @click="editor?.chain().focus().setTextAlign('left').run()"
@@ -251,7 +251,7 @@ defineExpose({
       </div>
 
       <!-- Lists & Blocks -->
-      <div class="flex items-center gap-0.5 border-r border-emerald-900/10 pr-2 mr-0.5">
+      <div class="flex items-center gap-0.5 border-r border-emerald-900/10 dark:border-slate-800 pr-2 mr-0.5">
         <button
           type="button"
           @click="editor?.chain().focus().toggleBulletList().run()"
@@ -287,7 +287,7 @@ defineExpose({
       </div>
 
       <!-- Media & Link -->
-      <div class="flex items-center gap-0.5 border-r border-emerald-900/10 pr-2 mr-0.5">
+      <div class="flex items-center gap-0.5 border-r border-emerald-900/10 dark:border-slate-800 pr-2 mr-0.5">
         <button
           type="button"
           @click="addImage"
@@ -332,19 +332,19 @@ defineExpose({
     <!-- Area Konten Editor -->
     <EditorContent
       :editor="editor"
-      class="editor-content prose prose-slate max-w-none p-5 min-h-[350px] focus:outline-none bg-white"
+      class="editor-content prose prose-slate dark:prose-invert max-w-none p-5 min-h-[350px] focus:outline-none bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
     />
   </div>
 </template>
 
 <style scoped>
-/* Tombol Toolbar Style - Hijau Kalem */
+/* Tombol Toolbar Style - Hijau Kalem dengan Mode Gelap */
 .toolbar-btn {
-  @apply p-1.5 rounded-lg text-slate-600 hover:bg-emerald-100/60 hover:text-emerald-900 transition-all flex items-center justify-center;
+  @apply p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-emerald-100/60 dark:hover:bg-slate-800 hover:text-emerald-900 dark:hover:text-slate-200 transition-all flex items-center justify-center cursor-pointer;
 }
 
 .toolbar-btn.is-active {
-  @apply bg-emerald-100 text-emerald-800 font-semibold shadow-sm;
+  @apply bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-400 font-semibold shadow-sm;
 }
 
 /* Styling Dasar ProseMirror */
@@ -362,7 +362,7 @@ defineExpose({
   height: 0;
 }
 
-/* Kustomisasi & Pembatasan Lebar Gambar agar Pas dan Responsif */
+/* Kustomisasi Gambar */
 .editor-content :deep(.ProseMirror img) {
   display: block;
   max-width: 100% !important;
@@ -372,6 +372,7 @@ defineExpose({
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
 
+/* Blockquote */
 .editor-content :deep(.ProseMirror blockquote) {
   border-left: 4px solid #059669;
   padding-left: 1rem;
@@ -384,6 +385,14 @@ defineExpose({
   border-radius: 0 0.375rem 0.375rem 0;
 }
 
+:deep(.dark) .editor-content :deep(.ProseMirror blockquote),
+.editor-content :deep(.ProseMirror) :global(.dark) blockquote {
+  color: #94a3b8;
+  background-color: rgba(15, 23, 42, 0.6);
+  border-left-color: #10b981;
+}
+
+/* Inline Code */
 .editor-content :deep(.ProseMirror code) {
   background: #f4f7f5;
   color: #047857;
@@ -393,6 +402,12 @@ defineExpose({
   font-family: monospace;
 }
 
+:deep(.dark) .editor-content :deep(.ProseMirror code) {
+  background: rgba(30, 41, 59, 0.8);
+  color: #34d399;
+}
+
+/* Code Block */
 .editor-content :deep(.ProseMirror pre) {
   background: #111827;
   color: #f8fafc;
@@ -408,6 +423,7 @@ defineExpose({
   color: inherit;
 }
 
+/* Lists */
 .editor-content :deep(.ProseMirror ul) {
   list-style-type: disc;
   padding-left: 1.5rem;
@@ -420,6 +436,7 @@ defineExpose({
   margin: 0.75rem 0;
 }
 
+/* Headings */
 .editor-content :deep(.ProseMirror h1) { font-size: 2rem; font-weight: 800; margin-top: 1.25rem; margin-bottom: 0.5rem; }
 .editor-content :deep(.ProseMirror h2) { font-size: 1.5rem; font-weight: 700; margin-top: 1.15rem; margin-bottom: 0.5rem; }
 .editor-content :deep(.ProseMirror h3) { font-size: 1.25rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0.5rem; }

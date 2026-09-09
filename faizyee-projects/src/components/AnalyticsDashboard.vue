@@ -2,6 +2,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Project, Blog, Ad } from '../types/portfolio'
+import { 
+  FolderGit2, 
+  MonitorPlay, 
+  BookOpen, 
+  Megaphone, 
+  Layers 
+} from 'lucide-vue-next'
 
 const props = defineProps<{
   projects: Project[]
@@ -94,15 +101,15 @@ const maxTechCount = computed(() => {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300">
     <!-- Header Informasi -->
-    <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
-        <h3 class="text-lg font-semibold text-slate-900">Analisis & Statistik Konten</h3>
-        <p class="text-sm text-slate-500 mt-0.5">Ringkasan performa portofolio, publikasi blog, dan pengelolaan iklan Anda secara real-time.</p>
+        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Analisis & Statistik Konten</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Ringkasan performa portofolio, publikasi blog, dan pengelolaan iklan Anda secara real-time.</p>
       </div>
       <div class="flex items-center gap-3">
-        <span class="px-3 py-1.5 text-xs font-medium bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-200">
+        <span class="px-3 py-1.5 text-xs font-medium bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 rounded-lg border border-emerald-200 dark:border-emerald-800/60">
           Total Item: {{ projectStats.total + blogStats.total + adStats.total }} Konten & Iklan
         </span>
       </div>
@@ -111,79 +118,71 @@ const maxTechCount = computed(() => {
     <!-- Quick Stats Grid (Ringkasan Utama - 4 Kolom) -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <!-- Total Proyek -->
-      <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6">
+      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-between">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Proyek</p>
-            <p class="text-2xl font-bold text-slate-900 mt-1">{{ projectStats.total }}</p>
+            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Proyek</p>
+            <p class="text-2xl font-bold text-slate-900 dark:text-white mt-1">{{ projectStats.total }}</p>
           </div>
-          <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
+          <div class="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+            <FolderGit2 class="w-6 h-6" />
           </div>
         </div>
-        <div class="mt-4 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 pt-3">
-          <span>Memiliki Demo: <strong>{{ projectStats.withDemo }}</strong></span>
-          <span>Memiliki Repo: <strong>{{ projectStats.withRepo }}</strong></span>
+        <div class="mt-4 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-3">
+          <span>Demo: <strong class="text-slate-700 dark:text-slate-200">{{ projectStats.withDemo }}</strong></span>
+          <span>Repo: <strong class="text-slate-700 dark:text-slate-200">{{ projectStats.withRepo }}</strong></span>
         </div>
       </div>
 
       <!-- Rasio Demo Proyek -->
-      <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6">
+      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-between">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Rasio Demo Proyek</p>
-            <p class="text-2xl font-bold text-slate-900 mt-1">{{ projectStats.demoPercentage }}%</p>
+            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Rasio Demo Proyek</p>
+            <p class="text-2xl font-bold text-slate-900 dark:text-white mt-1">{{ projectStats.demoPercentage }}%</p>
           </div>
-          <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
+          <div class="w-12 h-12 bg-blue-50 dark:bg-blue-950/50 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400">
+            <MonitorPlay class="w-6 h-6" />
           </div>
         </div>
         <div class="mt-4">
-          <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-            <div class="bg-blue-600 h-2 rounded-full transition-all duration-500" :style="{ width: `${projectStats.demoPercentage}%` }"></div>
+          <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div class="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-500" :style="{ width: `${projectStats.demoPercentage}%` }"></div>
           </div>
         </div>
       </div>
 
       <!-- Total Artikel Blog -->
-      <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6">
+      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-between">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Artikel Blog</p>
-            <p class="text-2xl font-bold text-slate-900 mt-1">{{ blogStats.total }}</p>
+            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Artikel Blog</p>
+            <p class="text-2xl font-bold text-slate-900 dark:text-white mt-1">{{ blogStats.total }}</p>
           </div>
-          <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-            </svg>
+          <div class="w-12 h-12 bg-purple-50 dark:bg-purple-950/50 rounded-xl flex items-center justify-center text-purple-600 dark:text-purple-400">
+            <BookOpen class="w-6 h-6" />
           </div>
         </div>
-        <div class="mt-4 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 pt-3">
-          <span>Published: <strong class="text-emerald-600">{{ blogStats.published }}</strong></span>
-          <span>Draft: <strong class="text-amber-600">{{ blogStats.draft }}</strong></span>
+        <div class="mt-4 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-3">
+          <span>Published: <strong class="text-emerald-600 dark:text-emerald-400">{{ blogStats.published }}</strong></span>
+          <span>Draft: <strong class="text-amber-600 dark:text-amber-400">{{ blogStats.draft }}</strong></span>
         </div>
       </div>
 
       <!-- Total Iklan / Ads -->
-      <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6">
+      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-between">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Slot Iklan</p>
-            <p class="text-2xl font-bold text-slate-900 mt-1">{{ adStats.total }}</p>
+            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Slot Iklan</p>
+            <p class="text-2xl font-bold text-slate-900 dark:text-white mt-1">{{ adStats.total }}</p>
           </div>
-          <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 58l9 9m0-9l-9 9M4 6h16M4 10h16M4 14h16M4 18h16" />
-            </svg>
+          <div class="w-12 h-12 bg-amber-50 dark:bg-amber-950/50 rounded-xl flex items-center justify-center text-amber-600 dark:text-amber-400">
+            <Megaphone class="w-6 h-6" />
           </div>
         </div>
-        <div class="mt-4 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 pt-3">
-          <span>Aktif: <strong class="text-emerald-600">{{ adStats.active }}</strong></span>
-          <span>Nonaktif: <strong class="text-slate-600">{{ adStats.inactive }}</strong></span>
+        <div class="mt-4 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-3">
+          <span>Aktif: <strong class="text-emerald-600 dark:text-emerald-400">{{ adStats.active }}</strong></span>
+          <span>Nonaktif: <strong class="text-slate-600 dark:text-slate-300">{{ adStats.inactive }}</strong></span>
         </div>
       </div>
     </div>
@@ -192,25 +191,25 @@ const maxTechCount = computed(() => {
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       
       <!-- Tech Stack Distribution (Populer) -->
-      <div class="lg:col-span-2 bg-white rounded-xl shadow-xs border border-slate-200 p-6">
+      <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 p-6">
         <div class="flex items-center justify-between mb-4">
-          <h4 class="text-base font-semibold text-slate-900">Distribusi Tech Stack</h4>
-          <span class="text-xs text-slate-500">Berdasarkan penggunaan di proyek</span>
+          <h4 class="text-base font-semibold text-slate-900 dark:text-white">Distribusi Tech Stack</h4>
+          <span class="text-xs text-slate-500 dark:text-slate-400">Berdasarkan penggunaan di proyek</span>
         </div>
 
-        <div v-if="projectStats.sortedTechStack.length === 0" class="py-12 text-center text-slate-400 text-sm">
+        <div v-if="projectStats.sortedTechStack.length === 0" class="py-12 text-center text-slate-400 dark:text-slate-500 text-sm">
           Belum ada data tech stack yang ditambahkan pada proyek.
         </div>
 
         <div v-else class="space-y-3.5 max-h-[320px] overflow-y-auto pr-2">
           <div v-for="tech in projectStats.sortedTechStack" :key="tech.name" class="space-y-1">
             <div class="flex justify-between text-xs font-medium">
-              <span class="text-slate-700">{{ tech.name }}</span>
-              <span class="text-slate-500">{{ tech.count }} Proyek</span>
+              <span class="text-slate-700 dark:text-slate-300">{{ tech.name }}</span>
+              <span class="text-slate-500 dark:text-slate-400">{{ tech.count }} Proyek</span>
             </div>
-            <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
               <div 
-                class="bg-emerald-600 h-2 rounded-full transition-all duration-500" 
+                class="bg-emerald-600 dark:bg-emerald-500 h-2 rounded-full transition-all duration-500" 
                 :style="{ width: `${(tech.count / maxTechCount) * 100}%` }"
               ></div>
             </div>
@@ -219,28 +218,28 @@ const maxTechCount = computed(() => {
       </div>
 
       <!-- Status Kesehatan Konten & Iklan -->
-      <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6 flex flex-col justify-between">
+      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-between">
         <div>
-          <h4 class="text-base font-semibold text-slate-900 mb-4">Kesehatan & Distribusi Iklan</h4>
+          <h4 class="text-base font-semibold text-slate-900 dark:text-white mb-4">Kesehatan & Distribusi Iklan</h4>
           <div class="space-y-4 text-sm">
-            <div class="flex items-center justify-between py-2 border-b border-slate-100">
-              <span class="text-slate-600">Rasio Iklan Aktif</span>
-              <span class="font-semibold text-emerald-600">{{ adStats.activeRate }}%</span>
+            <div class="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+              <span class="text-slate-600 dark:text-slate-400">Rasio Iklan Aktif</span>
+              <span class="font-semibold text-emerald-600 dark:text-emerald-400">{{ adStats.activeRate }}%</span>
             </div>
-            <div class="flex items-center justify-between py-2 border-b border-slate-100">
-              <span class="text-slate-600">Slot Header / Footer</span>
-              <span class="font-semibold text-slate-900">
+            <div class="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+              <span class="text-slate-600 dark:text-slate-400">Slot Header / Footer</span>
+              <span class="font-semibold text-slate-900 dark:text-white">
                 {{ (adStats.positionCountMap['header'] || 0) + (adStats.positionCountMap['footer'] || 0) }} Iklan
               </span>
             </div>
-            <div class="flex items-center justify-between py-2 border-b border-slate-100">
-              <span class="text-slate-600">Slot In-Content</span>
-              <span class="font-semibold text-slate-900">{{ adStats.positionCountMap['in-content'] || 0 }} Iklan</span>
+            <div class="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800">
+              <span class="text-slate-600 dark:text-slate-400">Slot In-Content</span>
+              <span class="font-semibold text-slate-900 dark:text-white">{{ adStats.positionCountMap['in-content'] || 0 }} Iklan</span>
             </div>
           </div>
         </div>
 
-        <div class="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-400 text-center">
+        <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-400 dark:text-slate-500 text-center">
           Analisis diperbarui secara otomatis dari database portofolio.
         </div>
       </div>
@@ -248,59 +247,60 @@ const maxTechCount = computed(() => {
     </div>
 
     <!-- Rincian Statistik Konten & Iklan Table -->
-    <div class="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden">
-      <div class="px-6 py-4 border-b border-slate-200">
-        <h4 class="text-base font-semibold text-slate-900">Matrik Analisis Portofolio, Blog & Iklan</h4>
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2">
+        <Layers class="w-4 h-4 text-slate-400" />
+        <h4 class="text-base font-semibold text-slate-900 dark:text-white">Matrik Analisis Portofolio, Blog & Iklan</h4>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
-            <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
+            <tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
               <th class="px-6 py-3 font-medium">Kategori / Komponen</th>
               <th class="px-6 py-3 font-medium">Jumlah Total</th>
               <th class="px-6 py-3 font-medium">Rincian Status</th>
               <th class="px-6 py-3 font-medium">Status Optimal</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-200 text-sm">
+          <tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
             <tr>
-              <td class="px-6 py-4 font-medium text-slate-900">Proyek Portofolio</td>
-              <td class="px-6 py-4 text-slate-700">{{ projectStats.total }} Proyek</td>
-              <td class="px-6 py-4 text-slate-500">
+              <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">Proyek Portofolio</td>
+              <td class="px-6 py-4 text-slate-700 dark:text-slate-300">{{ projectStats.total }} Proyek</td>
+              <td class="px-6 py-4 text-slate-500 dark:text-slate-400">
                 {{ projectStats.withDemo }} dengan Demo, {{ projectStats.withRepo }} dengan Repository
               </td>
               <td class="px-6 py-4">
-                <span class="px-2.5 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200">Aktif</span>
+                <span class="px-2.5 py-1 text-xs font-medium bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 rounded-full border border-emerald-200 dark:border-emerald-800/60">Aktif</span>
               </td>
             </tr>
             <tr>
-              <td class="px-6 py-4 font-medium text-slate-900">Artikel Blog</td>
-              <td class="px-6 py-4 text-slate-700">{{ blogStats.total }} Artikel</td>
-              <td class="px-6 py-4 text-slate-500">
+              <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">Artikel Blog</td>
+              <td class="px-6 py-4 text-slate-700 dark:text-slate-300">{{ blogStats.total }} Artikel</td>
+              <td class="px-6 py-4 text-slate-500 dark:text-slate-400">
                 {{ blogStats.published }} Terpublikasi, {{ blogStats.draft }} Draft Tersimpan
               </td>
               <td class="px-6 py-4">
-                <span class="px-2.5 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200">Baik</span>
+                <span class="px-2.5 py-1 text-xs font-medium bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 rounded-full border border-emerald-200 dark:border-emerald-800/60">Baik</span>
               </td>
             </tr>
             <tr>
-              <td class="px-6 py-4 font-medium text-slate-900">Pengelolaan Iklan (Ads)</td>
-              <td class="px-6 py-4 text-slate-700">{{ adStats.total }} Iklan</td>
-              <td class="px-6 py-4 text-slate-500">
+              <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">Pengelolaan Iklan (Ads)</td>
+              <td class="px-6 py-4 text-slate-700 dark:text-slate-300">{{ adStats.total }} Iklan</td>
+              <td class="px-6 py-4 text-slate-500 dark:text-slate-400">
                 {{ adStats.active }} Aktif, {{ adStats.inactive }} Nonaktif
               </td>
               <td class="px-6 py-4">
-                <span class="px-2.5 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200">Monetisasi</span>
+                <span class="px-2.5 py-1 text-xs font-medium bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 rounded-full border border-emerald-200 dark:border-emerald-800/60">Monetisasi</span>
               </td>
             </tr>
             <tr>
-              <td class="px-6 py-4 font-medium text-slate-900">Teknologi Digunakan</td>
-              <td class="px-6 py-4 text-slate-700">{{ projectStats.sortedTechStack.length }} Teknologi</td>
-              <td class="px-6 py-4 text-slate-500">
+              <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">Teknologi Digunakan</td>
+              <td class="px-6 py-4 text-slate-700 dark:text-slate-300">{{ projectStats.sortedTechStack.length }} Teknologi</td>
+              <td class="px-6 py-4 text-slate-500 dark:text-slate-400">
                 Terbanyak: {{ projectStats.sortedTechStack[0]?.name || '-' }}
               </td>
               <td class="px-6 py-4">
-                <span class="px-2.5 py-1 text-xs font-medium bg-blue-50 text-blue-700 rounded-full border border-blue-200">Beragam</span>
+                <span class="px-2.5 py-1 text-xs font-medium bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 rounded-full border border-blue-200 dark:border-blue-800/60">Beragam</span>
               </td>
             </tr>
           </tbody>

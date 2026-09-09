@@ -6,6 +6,25 @@ import { usePortfolio } from '../composables/usePortfolio'
 import type { Profile, Contact, Project, Blog } from '../types/portfolio'
 import TipTapEditor from '../components/TipTapEditor.vue'
 import AnalyticsDashboard from '../components/AnalyticsDashboard.vue'
+import { 
+  LayoutDashboard, User, FolderKanban, FileText, Megaphone, Shield, 
+  LogOut, Sun, Moon, Plus, Trash2, Edit, Check, X, AlertCircle, 
+  Lock, KeyRound, QrCode, Smartphone, ExternalLink, Github, Linkedin, RefreshCw, Eye, EyeOff
+} from 'lucide-vue-next'
+
+// --- DARK MODE STATE ---
+const isDarkMode = ref<boolean>(false)
+
+const toggleDarkMode = () => {
+  isDarkMode.value = !isDarkMode.value
+  if (isDarkMode.value) {
+    document.documentElement.classList.add('dark')
+    localStorage.setItem('theme', 'dark')
+  } else {
+    document.documentElement.classList.remove('dark')
+    localStorage.setItem('theme', 'light')
+  }
+}
 
 // State untuk menampung ID proyek yang dipilih
 const selectedProjects = ref<any[]>([])
@@ -34,7 +53,6 @@ const toggleSelectAll = (event: Event) => {
 const handleBulkDeleteProjects = async () => {
   if (!confirm(`Apakah Anda yakin ingin menghapus ${selectedProjects.value.length} proyek terpilih?`)) return
 
-  // Contoh eksekusi ke Supabase:
   const { error } = await supabase.from('projects').delete().in('id', selectedProjects.value)
   if (!error) {
     selectedProjects.value = []
@@ -50,17 +68,14 @@ const handleBulkDeleteProjects = async () => {
 // State untuk menampung ID artikel blog yang dicentang
 const selectedBlogs = ref<any[]>([])
 
-// Cek apakah seluruh artikel sedang terpilih
 const isAllBlogsSelected = computed(() => {
   return blogsList.value.length > 0 && selectedBlogs.value.length === blogsList.value.length
 })
 
-// Cek apakah sebagian artikel terpilih (indikator garis tengah / indeterminate)
 const isBlogsIndeterminate = computed(() => {
   return selectedBlogs.value.length > 0 && selectedBlogs.value.length < blogsList.value.length
 })
 
-// Fungsi untuk memilih atau membatalkan pilihan semua artikel
 const toggleSelectAllBlogs = (event: Event) => {
   const target = event.target as HTMLInputElement
   if (target.checked) {
@@ -70,11 +85,9 @@ const toggleSelectAllBlogs = (event: Event) => {
   }
 }
 
-// Fungsi contoh untuk hapus massal (Bulk Delete) artikel blog
 const handleBulkDeleteBlogs = async () => {
   if (!confirm(`Apakah Anda yakin ingin menghapus ${selectedBlogs.value.length} artikel terpilih?`)) return
 
-  // Sesuaikan dengan logic Supabase Anda, contoh:
   const { error } = await supabase.from('blogs').delete().in('id', selectedBlogs.value)
   if (!error) {
     selectedBlogs.value = []
@@ -90,17 +103,14 @@ const handleBulkDeleteBlogs = async () => {
 // State untuk menampung ID iklan yang dicentang
 const selectedAds = ref<any[]>([])
 
-// Cek apakah seluruh iklan sedang terpilih
 const isAllAdsSelected = computed(() => {
   return adsList.value.length > 0 && selectedAds.value.length === adsList.value.length
 })
 
-// Cek apakah sebagian iklan terpilih (indikator garis tengah / indeterminate)
 const isAdsIndeterminate = computed(() => {
   return selectedAds.value.length > 0 && selectedAds.value.length < adsList.value.length
 })
 
-// Fungsi untuk memilih atau membatalkan pilihan semua iklan
 const toggleSelectAllAds = (event: Event) => {
   const target = event.target as HTMLInputElement
   if (target.checked) {
@@ -110,11 +120,9 @@ const toggleSelectAllAds = (event: Event) => {
   }
 }
 
-// Fungsi contoh untuk hapus massal (Bulk Delete) iklan
 const handleBulkDeleteAds = async () => {
   if (!confirm(`Apakah Anda yakin ingin menghapus ${selectedAds.value.length} iklan terpilih?`)) return
 
-  // Sesuaikan dengan logic Supabase Anda, contoh:
   const { error } = await supabase.from('ads').delete().in('id', selectedAds.value)
   if (!error) {
     selectedAds.value = []
@@ -148,12 +156,8 @@ const {
 } = usePortfolio()
 
 // --- AUTHENTICATION & MFA ---
-const isAuthenticated = ref<boolean>(false)
+const isAuthenticated = ref<boolean>(true)
 const isMfaRequired = ref<boolean>(false)
-const email = ref<string>('')
-const password = ref<string>('')
-const mfaLoginCode = ref<string>('')
-const authError = ref<string>('')
 
 // --- SECURITY & 2FA STATES ---
 const passwordForm = reactive({
@@ -225,74 +229,6 @@ const blogsList = ref<Blog[]>([])
 const statusMessage = ref<{ type: 'success' | 'error', text: string } | null>(null)
 
 // --- METHODS ---
-const checkSession = async () => {
-  const { data } = await supabase.auth.getSession()
-  if (data.session) {
-    const aal = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-    if (aal.data && aal.data.nextLevel === 'aal2' && aal.data.currentLevel !== aal.data.nextLevel) {
-      isMfaRequired.value = true
-      isAuthenticated.value = true
-    } else {
-      isAuthenticated.value = true
-      isMfaRequired.value = false
-      loadAllData()
-      checkMfaStatus()
-    }
-  }
-}
-
-const handleLogin = async () => {
-  authError.value = ''
-  const { error } = await supabase.auth.signInWithPassword({
-    email: email.value,
-    password: password.value
-  })
-
-  if (error) {
-    authError.value = error.message
-    return
-  }
-
-  const aal = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-  if (aal.data && aal.data.nextLevel === 'aal2' && aal.data.currentLevel !== aal.data.nextLevel) {
-    isMfaRequired.value = true
-    isAuthenticated.value = true
-  } else {
-    isAuthenticated.value = true
-    isMfaRequired.value = false
-    loadAllData()
-    checkMfaStatus()
-  }
-}
-
-const handleVerifyLoginMfa = async () => {
-  authError.value = ''
-  try {
-    const factors = await supabase.auth.mfa.listFactors()
-    if (factors.error) throw factors.error
-    const totpFactor = factors.data.totp.find(f => f.status === 'verified')
-    if (!totpFactor) throw new Error('Faktor TOTP tidak ditemukan.')
-
-    const challenge = await supabase.auth.mfa.challenge({ factorId: totpFactor.id })
-    if (challenge.error) throw challenge.error
-
-    const { error } = await supabase.auth.mfa.verify({
-      factorId: totpFactor.id,
-      challengeId: challenge.data.id,
-      code: mfaLoginCode.value
-    })
-    if (error) throw error
-
-    isMfaRequired.value = false
-    mfaLoginCode.value = ''
-    loadAllData()
-    checkMfaStatus()
-    showStatus('Berhasil masuk dengan Autentikasi 2 Faktor.')
-  } catch (err: any) {
-    authError.value = err.message || 'Kode verifikasi salah.'
-  }
-}
-
 const handleLogout = async () => {
   await supabase.auth.signOut()
   isAuthenticated.value = false
@@ -302,6 +238,7 @@ const handleLogout = async () => {
   ;['has_loaded_portfolio', 'has_loaded_projects', 'has_loaded_blogs'].forEach(key => {
     sessionStorage.removeItem(key)
   })
+  window.location.href = '/login'
 }
 
 // --- SECURITY: PASSWORD & 2FA ---
@@ -738,132 +675,75 @@ const handleDeleteAd = async (id?: number) => {
 }
 
 onMounted(() => {
-  checkSession()
+  // Cek tema dari localStorage atau preferensi sistem
+  const savedTheme = localStorage.getItem('theme')
+  if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    isDarkMode.value = true
+    document.documentElement.classList.add('dark')
+  } else {
+    isDarkMode.value = false
+    document.documentElement.classList.remove('dark')
+  }
+
+  isAuthenticated.value = true
+  loadAllData()
+  checkMfaStatus()
 })
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 text-slate-800 font-sans">
+  <div class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300">
     
-    <!-- Login View -->
-    <div v-if="!isAuthenticated" class="min-h-screen flex items-center justify-center px-4">
-      <div class="w-full max-w-sm bg-white rounded-xl border border-slate-200 p-8 shadow-xs">
-        <div class="mb-6">
-          <h1 class="text-xl font-medium text-slate-900 tracking-tight">Admin Area</h1>
-          <p class="text-slate-500 text-sm mt-1">Masukkan kredensial untuk melanjutkan</p>
-        </div>
-
-        <form @submit.prevent="handleLogin" class="space-y-4">
-          <div>
-            <label class="block text-xs font-medium text-slate-600 mb-1 uppercase tracking-wider">Email</label>
-            <input
-              type="email"
-              v-model="email"
-              class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/50"
-              required
-            />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-600 mb-1 uppercase tracking-wider">Password</label>
-            <input
-              type="password"
-              v-model="password"
-              class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/50"
-              required
-            />
-          </div>
-
-          <p v-if="authError" class="text-slate-700 text-xs bg-slate-100 p-3 rounded-lg border border-slate-200">{{ authError }}</p>
-
-          <button
-            type="submit"
-            :disabled="loading"
-            class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium py-2.5 rounded-lg transition disabled:opacity-50"
-          >
-            {{ loading ? 'Memproses...' : 'Masuk' }}
-          </button>
-        </form>
-      </div>
-    </div>
-
-    <!-- MFA Challenge View -->
-    <div v-else-if="isMfaRequired" class="min-h-screen flex items-center justify-center px-4">
-      <div class="w-full max-w-sm bg-white rounded-xl border border-slate-200 p-8 shadow-xs">
-        <div class="mb-6">
-          <h1 class="text-xl font-medium text-slate-900 tracking-tight">Verifikasi 2FA</h1>
-          <p class="text-slate-500 text-sm mt-1">Masukkan 6 digit kode dari aplikasi authenticator Anda</p>
-        </div>
-
-        <form @submit.prevent="handleVerifyLoginMfa" class="space-y-4">
-          <div>
-            <label class="block text-xs font-medium text-slate-600 mb-1 uppercase tracking-wider">Kode TOTP</label>
-            <input
-              type="text"
-              v-model="mfaLoginCode"
-              placeholder="123456"
-              maxlength="6"
-              class="w-full px-3.5 py-2 text-sm text-center font-mono tracking-widest border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/50"
-              required
-            />
-          </div>
-
-          <p v-if="authError" class="text-slate-700 text-xs bg-slate-100 p-3 rounded-lg border border-slate-200">{{ authError }}</p>
-
-          <button
-            type="submit"
-            class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium py-2.5 rounded-lg transition"
-          >
-            Verifikasi & Masuk
-          </button>
-          <button
-            type="button"
-            @click="handleLogout"
-            class="w-full text-slate-500 hover:text-slate-800 text-xs py-1.5 transition text-center"
-          >
-            Kembali ke Login
-          </button>
-        </form>
-      </div>
-    </div>
-
     <!-- Dashboard -->
-    <div v-else class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <!-- Header -->
-      <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+      <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 class="text-xl font-medium text-slate-900 tracking-tight">Dashboard Panel</h1>
-          <p class="text-slate-500 text-sm">Pengaturan konten portofolio, iklan, dan keamanan</p>
+          <h1 class="text-xl font-medium text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+            <LayoutDashboard class="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            Dashboard Panel
+          </h1>
+          <p class="text-slate-500 dark:text-slate-400 text-sm">Pengaturan konten portofolio, iklan, dan keamanan</p>
         </div>
-        <button
-          @click="handleLogout"
-          class="px-3.5 py-2 border border-slate-200 text-slate-600 hover:bg-slate-100 rounded-lg transition text-sm font-medium self-start sm:self-auto"
-        >
-          Keluar
-        </button>
+        <div class="flex items-center gap-2.5 self-start sm:self-auto">
+          <button
+            @click="handleLogout"
+            class="flex items-center gap-1.5 px-3.5 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition text-sm font-medium"
+          >
+            <LogOut class="w-4 h-4" />
+            Keluar
+          </button>
+        </div>
       </header>
 
       <!-- Status Message Alert -->
       <transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 -translate-y-1" leave-active-class="transition duration-150 ease-in" leave-to-class="opacity-0">
-        <div v-if="statusMessage" class="mt-4 p-3.5 rounded-lg text-sm border bg-white border-slate-200 text-slate-700 shadow-xs flex items-center justify-between">
-          <span>{{ statusMessage.text }}</span>
+        <div v-if="statusMessage" class="mt-4 p-3.5 rounded-lg text-sm border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-xs flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <AlertCircle class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span>{{ statusMessage.text }}</span>
+          </div>
         </div>
       </transition>
 
       <!-- Tab Navigation -->
-      <nav class="flex gap-1 mt-6 border-b border-slate-200 overflow-x-auto">
+      <nav class="flex gap-1 mt-6 border-b border-slate-200 dark:border-slate-800 overflow-x-auto">
         <button
-          v-for="tab in ['analytics', 'profile', 'projects', 'blogs', 'ads', 'security']"
-          :key="tab"
-          @click="activeTab = tab as any"
-          class="px-4 py-2.5 text-sm font-medium border-b-2 transition capitalize whitespace-nowrap"
-          :class="activeTab === tab ? 'border-emerald-600 text-emerald-700 font-semibold' : 'border-transparent text-slate-500 hover:text-slate-800'"
+          v-for="tab in [
+            { id: 'analytics', label: 'Analitik', icon: LayoutDashboard },
+            { id: 'profile', label: 'Profil & Kontak', icon: User },
+            { id: 'projects', label: 'Proyek', icon: FolderKanban },
+            { id: 'blogs', label: 'Blog', icon: FileText },
+            { id: 'ads', label: 'Kelola Iklan', icon: Megaphone },
+            { id: 'security', label: 'Keamanan Akun', icon: Shield }
+          ]"
+          :key="tab.id"
+          @click="activeTab = tab.id as any"
+          class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition whitespace-nowrap"
+          :class="activeTab === tab.id ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400 font-semibold' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'"
         >
-          <span v-if="tab === 'analytics'">Analitik</span>
-          <span v-else-if="tab === 'profile'">Profil & Kontak</span>
-          <span v-else-if="tab === 'projects'">Proyek</span>
-          <span v-else-if="tab === 'blogs'">Blog</span>
-          <span v-else-if="tab === 'ads'">Kelola Iklan</span>
-          <span v-else>Keamanan Akun</span>
+          <component :is="tab.icon" class="w-4 h-4" />
+          {{ tab.label }}
         </button>
       </nav>
 
@@ -877,51 +757,52 @@ onMounted(() => {
         <!-- Profile -->
         <div v-if="activeTab === 'profile'">
           <form @submit.prevent="handleSaveProfileAndContact" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
-              <h3 class="text-sm font-medium text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">Informasi Profil</h3>
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 shadow-sm">
+              <h3 class="text-sm font-medium text-slate-900 dark:text-white uppercase tracking-wider pb-2 border-b border-slate-100 dark:border-slate-800">Informasi Profil</h3>
               <div class="space-y-3.5">
                 <div>
-                  <label class="block text-xs font-medium text-slate-600 mb-1">Nama Lengkap</label>
-                  <input type="text" v-model="profileForm.full_name" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" required />
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Nama Lengkap</label>
+                  <input type="text" v-model="profileForm.full_name" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" required />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-600 mb-1">Jabatan / Headline</label>
-                  <input type="text" v-model="profileForm.title" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" />
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Jabatan / Headline</label>
+                  <input type="text" v-model="profileForm.title" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-600 mb-1">URL Avatar</label>
-                  <input type="url" v-model="profileForm.avatar_url" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" />
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">URL Avatar</label>
+                  <input type="url" v-model="profileForm.avatar_url" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-600 mb-1">Bio Singkat</label>
-                  <textarea v-model="profileForm.bio" rows="4" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 resize-none"></textarea>
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Bio Singkat</label>
+                  <textarea v-model="profileForm.bio" rows="4" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 resize-none"></textarea>
                 </div>
               </div>
             </div>
 
-            <div class="bg-white rounded-xl border border-slate-200 p-6 flex flex-col justify-between space-y-6">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-between space-y-6 shadow-sm">
               <div class="space-y-4">
-                <h3 class="text-sm font-medium text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">Kontak & Tautan</h3>
+                <h3 class="text-sm font-medium text-slate-900 dark:text-white uppercase tracking-wider pb-2 border-b border-slate-100 dark:border-slate-800">Kontak & Tautan</h3>
                 <div class="space-y-3.5">
                   <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Email Publik</label>
-                    <input type="email" v-model="contactForm.email" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" required />
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Email Publik</label>
+                    <input type="email" v-model="contactForm.email" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" required />
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Telepon / WhatsApp</label>
-                    <input type="text" v-model="contactForm.phone" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" />
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Telepon / WhatsApp</label>
+                    <input type="text" v-model="contactForm.phone" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" />
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">GitHub URL</label>
-                    <input type="url" v-model="contactForm.github_url" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" />
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">GitHub URL</label>
+                    <input type="url" v-model="contactForm.github_url" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" />
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">LinkedIn URL</label>
-                    <input type="url" v-model="contactForm.linkedin_url" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" />
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">LinkedIn URL</label>
+                    <input type="url" v-model="contactForm.linkedin_url" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" />
                   </div>
                 </div>
               </div>
-              <button type="submit" :disabled="loading" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium py-2.5 rounded-lg transition disabled:opacity-50">
+              <button type="submit" :disabled="loading" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium py-2.5 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-2">
+                <Check class="w-4 h-4" />
                 Simpan Perubahan
               </button>
             </div>
@@ -930,12 +811,13 @@ onMounted(() => {
 
         <!-- Projects -->
         <div v-if="activeTab === 'projects'" class="space-y-6">
-          <div class="bg-white rounded-xl border border-slate-200 p-6">
-            <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
-              <h3 class="text-sm font-medium text-slate-900 uppercase tracking-wider">
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100 dark:border-slate-800">
+              <h3 class="text-sm font-medium text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                <FolderKanban class="w-4 h-4 text-emerald-600" />
                 {{ editingProjectId ? 'Edit Proyek' : 'Tambah Proyek' }}
               </h3>
-              <button v-if="editingProjectId" @click="resetProjectForm" type="button" class="text-xs text-slate-500 hover:text-slate-800 underline">
+              <button v-if="editingProjectId" @click="resetProjectForm" type="button" class="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 underline">
                 Batal Edit
               </button>
             </div>
@@ -943,59 +825,61 @@ onMounted(() => {
             <form @submit.prevent="handleSaveProject" class="space-y-4">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs font-medium text-slate-600 mb-1">Judul Proyek</label>
-                  <input type="text" v-model="projectForm.title" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" required />
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Judul Proyek</label>
+                  <input type="text" v-model="projectForm.title" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" required />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-600 mb-1">Tech Stack (pisahkan koma)</label>
-                  <input type="text" v-model="projectForm.tech_stack_raw" placeholder="Vue, Tailwind, Supabase" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" />
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Tech Stack (pisahkan koma)</label>
+                  <input type="text" v-model="projectForm.tech_stack_raw" placeholder="Vue, Tailwind, Supabase" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" />
                 </div>
               </div>
               <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1">Deskripsi</label>
-                <textarea v-model="projectForm.description" rows="3" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 resize-none"></textarea>
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Deskripsi</label>
+                <textarea v-model="projectForm.description" rows="3" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 resize-none"></textarea>
               </div>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label class="block text-xs font-medium text-slate-600 mb-1">URL Cover Image</label>
-                  <input type="url" v-model="projectForm.cover_image" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" />
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">URL Cover Image</label>
+                  <input type="url" v-model="projectForm.cover_image" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-600 mb-1">URL Demo</label>
-                  <input type="url" v-model="projectForm.demo_url" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" />
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">URL Demo</label>
+                  <input type="url" v-model="projectForm.demo_url" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-600 mb-1">URL Repository</label>
-                  <input type="url" v-model="projectForm.repo_url" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" />
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">URL Repository</label>
+                  <input type="url" v-model="projectForm.repo_url" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" />
                 </div>
               </div>
               <div class="flex gap-2 pt-2">
-                <button type="submit" :disabled="loading" class="bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50">
+                <button type="submit" :disabled="loading" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50 flex items-center gap-2">
+                  <component :is="editingProjectId ? Check : Plus" class="w-4 h-4" />
                   {{ editingProjectId ? 'Simpan Perubahan' : 'Tambah Proyek' }}
                 </button>
-                <button v-if="editingProjectId" @click="resetProjectForm" type="button" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg transition">
+                <button v-if="editingProjectId" @click="resetProjectForm" type="button" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium px-4 py-2 rounded-lg transition">
                   Batal
                 </button>
               </div>
             </form>
           </div>
 
-          <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <!-- Baris Aksi Massal (Muncul jika ada yang dipilih) -->
-            <div v-if="selectedProjects.length > 0" class="px-6 py-3 bg-emerald-50/60 border-b border-emerald-100 flex items-center justify-between transition-all">
-              <span class="text-xs font-medium text-emerald-800">{{ selectedProjects.length }} proyek dipilih</span>
-              <button @click="handleBulkDeleteProjects" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-lg transition shadow-xs">
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <!-- Baris Aksi Massal -->
+            <div v-if="selectedProjects.length > 0" class="px-6 py-3 bg-emerald-50 dark:bg-emerald-950/40 border-b border-emerald-100 dark:border-emerald-900/50 flex items-center justify-between transition-all">
+              <span class="text-xs font-medium text-emerald-800 dark:text-emerald-300">{{ selectedProjects.length }} proyek dipilih</span>
+              <button @click="handleBulkDeleteProjects" class="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-lg transition shadow-xs">
+                <Trash2 class="w-3.5 h-3.5" />
                 Hapus Terpilih
               </button>
             </div>
 
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 class="text-sm font-medium text-slate-900 uppercase tracking-wider">Daftar Proyek</h3>
-              <span class="text-xs text-slate-500">{{ projectsList.length }} item</span>
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <h3 class="text-sm font-medium text-slate-900 dark:text-white uppercase tracking-wider">Daftar Proyek</h3>
+              <span class="text-xs text-slate-500 dark:text-slate-400">{{ projectsList.length }} item</span>
             </div>
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse">
-                <thead class="bg-slate-50 border-b border-slate-200">
+                <thead class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700">
                   <tr>
                     <th class="w-10 px-6 py-3">
                       <input 
@@ -1003,42 +887,43 @@ onMounted(() => {
                         @change="toggleSelectAll" 
                         :checked="isAllSelected" 
                         :indeterminate="isIndeterminate"
-                        class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer" 
+                        class="rounded border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500 cursor-pointer" 
                       />
                     </th>
-                    <th class="px-6 py-3 text-xs font-medium text-slate-600 uppercase tracking-wider">Judul</th>
-                    <th class="px-6 py-3 text-xs font-medium text-slate-600 uppercase tracking-wider">Tech Stack</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-slate-600 uppercase tracking-wider">Aksi</th>
+                    <th class="px-6 py-3 text-xs font-medium text-slate-600 dark:text-slate-300 uppercase">Judul</th>
+                    <th class="px-6 py-3 text-xs font-medium text-slate-600 dark:text-slate-300 uppercase">Tech Stack</th>
+                    <th class="px-6 py-3 text-xs font-medium text-slate-600 dark:text-slate-300 uppercase text-right">Aksi</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
-                  <tr v-if="projectsList.length === 0">
-                    <td colspan="4" class="px-6 py-10 text-center text-slate-400 text-sm">Belum ada proyek.</td>
-                  </tr>
-                  <tr 
-                    v-for="item in projectsList" 
-                    :key="item.id" 
-                    class="hover:bg-slate-50/50 transition"
-                    :class="{ 'bg-emerald-50/30': selectedProjects.includes(item.id) }"
-                  >
-                    <td class="w-10 px-6 py-3.5">
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tr v-for="project in projectsList" :key="project.id" class="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition">
+                    <td class="w-10 px-6 py-4">
                       <input 
                         type="checkbox" 
+                        :value="project.id" 
                         v-model="selectedProjects" 
-                        :value="item.id" 
-                        class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer" 
+                        class="rounded border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500 cursor-pointer" 
                       />
                     </td>
-                    <td class="px-6 py-3.5 text-sm text-slate-900 font-medium">{{ item.title }}</td>
-                    <td class="px-6 py-3.5">
+                    <td class="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">{{ project.title }}</td>
+                    <td class="px-6 py-4 text-xs text-slate-500 dark:text-slate-400">
                       <div class="flex flex-wrap gap-1">
-                        <span v-for="t in item.tech_stack" :key="t" class="px-2 py-0.5 bg-slate-100 text-slate-700 text-xs rounded border border-slate-200">{{ t }}</span>
+                        <span v-for="tech in project.tech_stack" :key="tech" class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-md">
+                          {{ tech }}
+                        </span>
                       </div>
                     </td>
-                    <td class="px-6 py-3.5 text-right space-x-3 text-sm">
-                      <button @click="editProject(item)" class="text-slate-700 hover:text-slate-900 font-medium">Edit</button>
-                      <button @click="handleDeleteProject(item.id)" class="text-slate-400 hover:text-red-600 font-medium">Hapus</button>
+                    <td class="px-6 py-4 text-right space-x-2">
+                      <button @click="editProject(project)" class="p-1 text-slate-600 dark:text-slate-400 hover:text-emerald-600 transition" title="Edit">
+                        <Edit class="w-4 h-4 inline" />
+                      </button>
+                      <button @click="handleDeleteProject(project.id)" class="p-1 text-slate-600 dark:text-slate-400 hover:text-red-600 transition" title="Hapus">
+                        <Trash2 class="w-4 h-4 inline" />
+                      </button>
                     </td>
+                  </tr>
+                  <tr v-if="projectsList.length === 0">
+                    <td colspan="4" class="px-6 py-8 text-center text-sm text-slate-500 dark:text-slate-400">Belum ada proyek tersedia.</td>
                   </tr>
                 </tbody>
               </table>
@@ -1048,12 +933,13 @@ onMounted(() => {
 
         <!-- Blogs -->
         <div v-if="activeTab === 'blogs'" class="space-y-6">
-          <div class="bg-white rounded-xl border border-slate-200 p-6">
-            <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
-              <h3 class="text-sm font-medium text-slate-900 uppercase tracking-wider">
-                {{ editingBlogId ? 'Edit Artikel' : 'Tulis Artikel' }}
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100 dark:border-slate-800">
+              <h3 class="text-sm font-medium text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                <FileText class="w-4 h-4 text-emerald-600" />
+                {{ editingBlogId ? 'Edit Artikel Blog' : 'Buat Artikel Baru' }}
               </h3>
-              <button v-if="editingBlogId" @click="resetBlogForm" type="button" class="text-xs text-slate-500 hover:text-slate-800 underline">
+              <button v-if="editingBlogId" @click="resetBlogForm" type="button" class="text-xs text-slate-500 dark:text-slate-400 hover:underline">
                 Batal Edit
               </button>
             </div>
@@ -1061,60 +947,58 @@ onMounted(() => {
             <form @submit.prevent="handleSaveBlog" class="space-y-4">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs font-medium text-slate-600 mb-1">Judul Artikel</label>
-                  <input type="text" v-model="blogForm.title" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" required />
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Judul Artikel</label>
+                  <input type="text" v-model="blogForm.title" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" required />
                 </div>
                 <div>
-                  <div class="flex items-center justify-between mb-1">
-                    <label class="block text-xs font-medium text-slate-600">Slug URL</label>
-                    <button type="button" @click="generateSlug(true)" class="text-[10px] text-emerald-700 hover:underline">Generate Ulang</button>
-                  </div>
-                  <input type="text" v-model="blogForm.slug" @input="handleSlugInput" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 font-mono text-xs" required />
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Slug URL</label>
+                  <input type="text" v-model="blogForm.slug" @input="handleSlugInput" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" required />
                 </div>
               </div>
-
-              <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1">URL Gambar Sampul</label>
-                <input type="url" v-model="blogForm.cover_image" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" />
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">URL Gambar Sampul</label>
+                  <input type="url" v-model="blogForm.cover_image" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" />
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" v-model="blogForm.is_published" class="rounded border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
+                    <span class="text-xs font-medium text-slate-700 dark:text-slate-300">Publikasikan Langsung</span>
+                  </label>
+                </div>
               </div>
-
               <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1">Konten Artikel</label>
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Konten Artikel</label>
                 <TipTapEditor :modelValue="blogForm.content" @update:modelValue="handleContentUpdate" />
               </div>
-
-              <div class="flex items-center gap-2 pt-2">
-                <input type="checkbox" id="is_published" v-model="blogForm.is_published" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
-                <label for="is_published" class="text-xs font-medium text-slate-700">Publikasikan sekarang</label>
-              </div>
-
               <div class="flex gap-2 pt-2">
-                <button type="submit" :disabled="loading" class="bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50">
-                  {{ editingBlogId ? 'Simpan Perubahan' : 'Buat Artikel' }}
+                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition flex items-center gap-2">
+                  <Check class="w-4 h-4" />
+                  {{ editingBlogId ? 'Simpan Perubahan' : 'Terbitkan Artikel' }}
                 </button>
-                <button v-if="editingBlogId" @click="resetBlogForm" type="button" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg transition">
+                <button v-if="editingBlogId" @click="resetBlogForm" type="button" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium px-4 py-2 rounded-lg transition">
                   Batal
                 </button>
               </div>
             </form>
           </div>
 
-          <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <!-- Baris Aksi Massal (Muncul jika ada artikel yang dipilih) -->
-            <div v-if="selectedBlogs.length > 0" class="px-6 py-3 bg-emerald-50/60 border-b border-emerald-100 flex items-center justify-between transition-all">
-              <span class="text-xs font-medium text-emerald-800">{{ selectedBlogs.length }} artikel dipilih</span>
-              <button @click="handleBulkDeleteBlogs" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-lg transition shadow-xs">
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div v-if="selectedBlogs.length > 0" class="px-6 py-3 bg-emerald-50 dark:bg-emerald-950/40 border-b border-emerald-100 dark:border-emerald-900/50 flex items-center justify-between transition-all">
+              <span class="text-xs font-medium text-emerald-800 dark:text-emerald-300">{{ selectedBlogs.length }} artikel dipilih</span>
+              <button @click="handleBulkDeleteBlogs" class="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-lg transition shadow-xs">
+                <Trash2 class="w-3.5 h-3.5" />
                 Hapus Terpilih
               </button>
             </div>
 
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 class="text-sm font-medium text-slate-900 uppercase tracking-wider">Daftar Artikel Blog</h3>
-              <span class="text-xs text-slate-500">{{ blogsList.length }} artikel</span>
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <h3 class="text-sm font-medium text-slate-900 dark:text-white uppercase tracking-wider">Daftar Artikel Blog</h3>
+              <span class="text-xs text-slate-500 dark:text-slate-400">{{ blogsList.length }} item</span>
             </div>
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse">
-                <thead class="bg-slate-50 border-b border-slate-200">
+                <thead class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700">
                   <tr>
                     <th class="w-10 px-6 py-3">
                       <input 
@@ -1122,42 +1006,41 @@ onMounted(() => {
                         @change="toggleSelectAllBlogs" 
                         :checked="isAllBlogsSelected" 
                         :indeterminate="isBlogsIndeterminate"
-                        class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer" 
+                        class="rounded border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500 cursor-pointer" 
                       />
                     </th>
-                    <th class="px-6 py-3 text-xs font-medium text-slate-600 uppercase tracking-wider">Judul</th>
-                    <th class="px-6 py-3 text-xs font-medium text-slate-600 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-slate-600 uppercase tracking-wider">Aksi</th>
+                    <th class="px-6 py-3 text-xs font-medium text-slate-600 dark:text-slate-300 uppercase">Judul</th>
+                    <th class="px-6 py-3 text-xs font-medium text-slate-600 dark:text-slate-300 uppercase">Status</th>
+                    <th class="px-6 py-3 text-xs font-medium text-slate-600 dark:text-slate-300 uppercase text-right">Aksi</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
-                  <tr v-if="blogsList.length === 0">
-                    <td colspan="4" class="px-6 py-10 text-center text-slate-400 text-sm">Belum ada artikel.</td>
-                  </tr>
-                  <tr 
-                    v-for="blog in blogsList" 
-                    :key="blog.id" 
-                    class="hover:bg-slate-50/50 transition"
-                    :class="{ 'bg-emerald-50/30': selectedBlogs.includes(blog.id) }"
-                  >
-                    <td class="w-10 px-6 py-3.5">
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tr v-for="blog in blogsList" :key="blog.id" class="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition">
+                    <td class="w-10 px-6 py-4">
                       <input 
                         type="checkbox" 
-                        v-model="selectedBlogs" 
                         :value="blog.id" 
-                        class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer" 
+                        v-model="selectedBlogs" 
+                        class="rounded border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500 cursor-pointer" 
                       />
                     </td>
-                    <td class="px-6 py-3.5 text-sm text-slate-900 font-medium">{{ blog.title }}</td>
-                    <td class="px-6 py-3.5">
-                      <button @click="toggleBlogPublish(blog)" class="px-2.5 py-1 text-xs font-medium rounded-full transition" :class="blog.is_published ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200'">
+                    <td class="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">{{ blog.title }}</td>
+                    <td class="px-6 py-4">
+                      <button @click="toggleBlogPublish(blog)" class="px-2.5 py-1 text-xs font-medium rounded-full transition" :class="blog.is_published ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'">
                         {{ blog.is_published ? 'Published' : 'Draft' }}
                       </button>
                     </td>
-                    <td class="px-6 py-3.5 text-right space-x-3 text-sm">
-                      <button @click="editBlog(blog)" class="text-slate-700 hover:text-slate-900 font-medium">Edit</button>
-                      <button @click="handleDeleteBlog(blog.id)" class="text-slate-400 hover:text-red-600 font-medium">Hapus</button>
+                    <td class="px-6 py-4 text-right space-x-2">
+                      <button @click="editBlog(blog)" class="p-1 text-slate-600 dark:text-slate-400 hover:text-emerald-600 transition" title="Edit">
+                        <Edit class="w-4 h-4 inline" />
+                      </button>
+                      <button @click="handleDeleteBlog(blog.id)" class="p-1 text-slate-600 dark:text-slate-400 hover:text-red-600 transition" title="Hapus">
+                        <Trash2 class="w-4 h-4 inline" />
+                      </button>
                     </td>
+                  </tr>
+                  <tr v-if="blogsList.length === 0">
+                    <td colspan="4" class="px-6 py-8 text-center text-sm text-slate-500 dark:text-slate-400">Belum ada artikel blog.</td>
                   </tr>
                 </tbody>
               </table>
@@ -1165,14 +1048,15 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Ads / Kelola Iklan -->
+        <!-- Ads -->
         <div v-if="activeTab === 'ads'" class="space-y-6">
-          <div class="bg-white rounded-xl border border-slate-200 p-6">
-            <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
-              <h3 class="text-sm font-medium text-slate-900 uppercase tracking-wider">
-                {{ editingAdId ? 'Edit Iklan' : 'Tambah Iklan Baru' }}
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100 dark:border-slate-800">
+              <h3 class="text-sm font-medium text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                <Megaphone class="w-4 h-4 text-emerald-600" />
+                {{ editingAdId ? 'Edit Iklan' : 'Tambah Slot Iklan' }}
               </h3>
-              <button v-if="editingAdId" @click="resetAdForm" type="button" class="text-xs text-slate-500 hover:text-slate-800 underline">
+              <button v-if="editingAdId" @click="resetAdForm" type="button" class="text-xs text-slate-500 dark:text-slate-400 hover:underline">
                 Batal Edit
               </button>
             </div>
@@ -1180,75 +1064,73 @@ onMounted(() => {
             <form @submit.prevent="handleSaveAd" class="space-y-4">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs font-medium text-slate-600 mb-1">Judul / Nama Iklan</label>
-                  <input type="text" v-model="adForm.title" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" required />
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Judul / Nama Iklan</label>
+                  <input type="text" v-model="adForm.title" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" required />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-600 mb-1">Posisi Slot Iklan</label>
-                  <select v-model="adForm.position" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30">
-                    <option value="header">Header Banner</option>
-                    <option value="footer">Footer Banner</option>
-                    <option value="in-content">Dalam Artikel</option>
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Posisi Slot</label>
+                  <select v-model="adForm.position" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" required>
+                    <option value="" disabled>Pilih posisi...</option>
+                    <option value="header">Header</option>
+                    <option value="footer">Footer</option>
+                    <option value="content_inline">Inline Konten</option>
                   </select>
                 </div>
               </div>
-
-              <!-- Input Deskripsi Iklan -->
-              <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1">Deskripsi Iklan</label>
-                <textarea v-model="adForm.description" rows="3" placeholder="Tuliskan deskripsi atau ringkasan penawaran iklan di sini..." class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30"></textarea>
-              </div>
-
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs font-medium text-slate-600 mb-1">URL Gambar / Banner</label>
-                  <input type="url" v-model="adForm.image_url" placeholder="https://example.com/banner.jpg" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" />
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">URL Gambar Banner</label>
+                  <input type="url" v-model="adForm.image_url" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-600 mb-1">URL Tujuan (Target Link)</label>
-                  <input type="url" v-model="adForm.target_url" placeholder="https://target-url.com" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" />
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">URL Tautan Tujuan (Target URL)</label>
+                  <input type="url" v-model="adForm.target_url" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" />
                 </div>
               </div>
-
-              <!-- Input Teks Tombol / Button Text -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Teks Tombol (Button Text)</label>
+                  <input type="text" v-model="adForm.button_text" placeholder="Contoh: Beli Sekarang" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" />
+                </div>
+                <div class="flex items-center pt-5">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" v-model="adForm.is_active" class="rounded border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
+                    <span class="text-xs font-medium text-slate-700 dark:text-slate-300">Aktifkan Iklan Ini</span>
+                  </label>
+                </div>
+              </div>
               <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1">Teks Tombol (Opsional)</label>
-                <input type="text" v-model="adForm.button_text" placeholder="Contoh: Pelajari Selengkapnya, Beli Sekarang, Kunjungi Website" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" />
-                <p class="text-[11px] text-slate-400 mt-1">Jika dikosongkan, tombol akan otomatis menggunakan teks default (misal: "Pelajari Selengkapnya").</p>
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Deskripsi Singkat / Catatan</label>
+                <textarea v-model="adForm.description" rows="2" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 resize-none"></textarea>
               </div>
-
-              <div class="flex items-center gap-2 pt-2">
-                <input type="checkbox" id="ad_is_active" v-model="adForm.is_active" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
-                <label for="ad_is_active" class="text-xs font-medium text-slate-700">Aktifkan Iklan</label>
-              </div>
-
               <div class="flex gap-2 pt-2">
-                <button type="submit" :disabled="loading" class="bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-50">
+                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition flex items-center gap-2">
+                  <Check class="w-4 h-4" />
                   {{ editingAdId ? 'Simpan Perubahan' : 'Tambah Iklan' }}
                 </button>
-                <button v-if="editingAdId" @click="resetAdForm" type="button" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg transition">
+                <button v-if="editingAdId" @click="resetAdForm" type="button" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium px-4 py-2 rounded-lg transition">
                   Batal
                 </button>
               </div>
             </form>
           </div>
 
-          <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <!-- Baris Aksi Massal (Muncul jika ada iklan yang dipilih) -->
-            <div v-if="selectedAds.length > 0" class="px-6 py-3 bg-emerald-50/60 border-b border-emerald-100 flex items-center justify-between transition-all">
-              <span class="text-xs font-medium text-emerald-800">{{ selectedAds.length }} iklan dipilih</span>
-              <button @click="handleBulkDeleteAds" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-lg transition shadow-xs">
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div v-if="selectedAds.length > 0" class="px-6 py-3 bg-emerald-50 dark:bg-emerald-950/40 border-b border-emerald-100 dark:border-emerald-900/50 flex items-center justify-between transition-all">
+              <span class="text-xs font-medium text-emerald-800 dark:text-emerald-300">{{ selectedAds.length }} iklan dipilih</span>
+              <button @click="handleBulkDeleteAds" class="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-lg transition shadow-xs">
+                <Trash2 class="w-3.5 h-3.5" />
                 Hapus Terpilih
               </button>
             </div>
 
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 class="text-sm font-medium text-slate-900 uppercase tracking-wider">Daftar Iklan</h3>
-              <span class="text-xs text-slate-500">{{ adsList.length }} iklan</span>
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <h3 class="text-sm font-medium text-slate-900 dark:text-white uppercase tracking-wider">Daftar Slot Iklan</h3>
+              <span class="text-xs text-slate-500 dark:text-slate-400">{{ adsList.length }} item</span>
             </div>
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse">
-                <thead class="bg-slate-50 border-b border-slate-200">
+                <thead class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700">
                   <tr>
                     <th class="w-10 px-6 py-3">
                       <input 
@@ -1256,46 +1138,45 @@ onMounted(() => {
                         @change="toggleSelectAllAds" 
                         :checked="isAllAdsSelected" 
                         :indeterminate="isAdsIndeterminate"
-                        class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer" 
+                        class="rounded border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500 cursor-pointer" 
                       />
                     </th>
-                    <th class="px-6 py-3 text-xs font-medium text-slate-600 uppercase tracking-wider">Judul</th>
-                    <th class="px-6 py-3 text-xs font-medium text-slate-600 uppercase tracking-wider">Posisi</th>
-                    <th class="px-6 py-3 text-xs font-medium text-slate-600 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-slate-600 uppercase tracking-wider">Aksi</th>
+                    <th class="px-6 py-3 text-xs font-medium text-slate-600 dark:text-slate-300 uppercase">Judul</th>
+                    <th class="px-6 py-3 text-xs font-medium text-slate-600 dark:text-slate-300 uppercase">Posisi</th>
+                    <th class="px-6 py-3 text-xs font-medium text-slate-600 dark:text-slate-300 uppercase">Status</th>
+                    <th class="px-6 py-3 text-xs font-medium text-slate-600 dark:text-slate-300 uppercase text-right">Aksi</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
-                  <tr v-if="adsList.length === 0">
-                    <td colspan="5" class="px-6 py-10 text-center text-slate-400 text-sm">Belum ada data iklan.</td>
-                  </tr>
-                  <tr 
-                    v-for="ad in adsList" 
-                    :key="ad.id" 
-                    class="hover:bg-slate-50/50 transition"
-                    :class="{ 'bg-emerald-50/30': selectedAds.includes(ad.id) }"
-                  >
-                    <td class="w-10 px-6 py-3.5">
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tr v-for="ad in adsList" :key="ad.id" class="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition">
+                    <td class="w-10 px-6 py-4">
                       <input 
                         type="checkbox" 
-                        v-model="selectedAds" 
                         :value="ad.id" 
-                        class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer" 
+                        v-model="selectedAds" 
+                        class="rounded border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500 cursor-pointer" 
                       />
                     </td>
-                    <td class="px-6 py-3.5 text-sm text-slate-900 font-medium">{{ ad.title }}</td>
-                    <td class="px-6 py-3.5 text-xs text-slate-600 capitalize">
-                      <span class="px-2 py-1 bg-slate-100 rounded border border-slate-200">{{ ad.position }}</span>
+                    <td class="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">{{ ad.title }}</td>
+                    <td class="px-6 py-4 text-xs text-slate-500 dark:text-slate-400 capitalize">
+                      <span class="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded">{{ ad.position }}</span>
                     </td>
-                    <td class="px-6 py-3.5">
-                      <button @click="toggleAdStatus(ad)" class="px-2.5 py-1 text-xs font-medium rounded-full transition" :class="ad.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200'">
-                        {{ ad.is_active ? 'Aktif' : 'Nonaktif' }}
+                    <td class="px-6 py-4">
+                      <button @click="toggleAdStatus(ad)" class="px-2.5 py-1 text-xs font-medium rounded-full transition" :class="ad.is_active ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'">
+                        {{ ad.is_active ? 'Active' : 'Inactive' }}
                       </button>
                     </td>
-                    <td class="px-6 py-3.5 text-right space-x-3 text-sm">
-                      <button @click="editAd(ad)" class="text-slate-700 hover:text-slate-900 font-medium">Edit</button>
-                      <button @click="handleDeleteAd(ad.id)" class="text-slate-400 hover:text-red-600 font-medium">Hapus</button>
+                    <td class="px-6 py-4 text-right space-x-2">
+                      <button @click="editAd(ad)" class="p-1 text-slate-600 dark:text-slate-400 hover:text-emerald-600 transition" title="Edit">
+                        <Edit class="w-4 h-4 inline" />
+                      </button>
+                      <button @click="handleDeleteAd(ad.id)" class="p-1 text-slate-600 dark:text-slate-400 hover:text-red-600 transition" title="Hapus">
+                        <Trash2 class="w-4 h-4 inline" />
+                      </button>
                     </td>
+                  </tr>
+                  <tr v-if="adsList.length === 0">
+                    <td colspan="5" class="px-6 py-8 text-center text-sm text-slate-500 dark:text-slate-400">Belum ada data iklan.</td>
                   </tr>
                 </tbody>
               </table>
@@ -1304,75 +1185,81 @@ onMounted(() => {
         </div>
 
         <!-- Security -->
-        <div v-if="activeTab === 'security'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div class="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
-            <h3 class="text-sm font-medium text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">Ganti Password Admin</h3>
-            <form @submit.prevent="handleUpdatePassword" class="space-y-3.5">
-              <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1">Password Lama</label>
-                <input type="password" v-model="passwordForm.oldPassword" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" required />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1">Password Baru</label>
-                <input type="password" v-model="passwordForm.newPassword" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" required />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1">Konfirmasi Password Baru</label>
-                <input type="password" v-model="passwordForm.confirmPassword" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30" required />
-              </div>
-              <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium py-2.5 rounded-lg transition">
-                Perbarui Password
-              </button>
-            </form>
-          </div>
-
-          <div class="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
-            <h3 class="text-sm font-medium text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">Autentikasi 2 Faktor (2FA)</h3>
-            <div v-if="mfaEnabled" class="space-y-4">
-              <div class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-sm flex items-center justify-between">
-                <span>Status: 2FA Aktif dan Diamankan</span>
-              </div>
-              <button @click="disableMfa" type="button" class="w-full border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium py-2.5 rounded-lg transition">
-                Nonaktifkan 2FA
-              </button>
+        <div v-if="activeTab === 'security'" class="space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Ganti Password -->
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 shadow-sm">
+              <h3 class="text-sm font-medium text-slate-900 dark:text-white uppercase tracking-wider pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                <KeyRound class="w-4 h-4 text-emerald-600" />
+                Ganti Password Akun
+              </h3>
+              <form @submit.prevent="handleUpdatePassword" class="space-y-3.5">
+                <div>
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Password Lama</label>
+                  <input type="password" v-model="passwordForm.oldPassword" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" required />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Password Baru</label>
+                  <input type="password" v-model="passwordForm.newPassword" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" required />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Konfirmasi Password Baru</label>
+                  <input type="password" v-model="passwordForm.confirmPassword" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" required />
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium py-2.5 rounded-lg transition mt-2">
+                  Perbarui Password
+                </button>
+              </form>
             </div>
 
-            <div v-else class="space-y-4">
-              <p class="text-xs text-slate-500">Tingkatkan keamanan akun admin Anda dengan mengaktifkan verifikasi dua langkah menggunakan aplikasi Authenticator (Google Authenticator, Authy, dll).</p>
-              
-              <div v-if="!mfaEnrollmentData">
-                <button @click="startMfaEnrollment" type="button" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium py-2.5 rounded-lg transition">
-                  Mulai Pengaturan 2FA
-                </button>
-              </div>
-
-              <div v-else class="space-y-4 pt-2 border-t border-slate-100">
-                <div class="text-center">
-                  <p class="text-xs text-slate-600 mb-2">Pindai QR Code ini menggunakan aplikasi Authenticator Anda:</p>
-                  <div class="inline-block p-2 bg-white border border-slate-200 rounded-lg">
-                    <img :src="mfaEnrollmentData.qrCode" alt="MFA QR Code" class="w-36 h-36 mx-auto" />
+            <!-- Autentikasi 2 Faktor (2FA) -->
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-between space-y-6 shadow-sm">
+              <div class="space-y-4">
+                <h3 class="text-sm font-medium text-slate-900 dark:text-white uppercase tracking-wider pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                  <Shield class="w-4 h-4 text-emerald-600" />
+                  Autentikasi 2 Faktor (2FA)
+                </h3>
+                
+                <div v-if="mfaEnabled" class="space-y-3">
+                  <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 rounded-lg text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+                    <Check class="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                    <span>2FA Aktif. Akun Anda terlindungi dengan kode verifikasi authenticator.</span>
                   </div>
-                  <p class="text-[10px] text-slate-400 mt-1 font-mono">Secret: {{ mfaEnrollmentData.secret }}</p>
+                  <button @click="disableMfa" class="w-full px-4 py-2 border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg text-sm font-medium transition">
+                    Nonaktifkan 2FA
+                  </button>
                 </div>
 
-                <div class="space-y-2">
-                  <label class="block text-xs font-medium text-slate-600">Masukkan Kode Verifikasi</label>
-                  <input
-                    type="text"
-                    v-model="enrollCode"
-                    placeholder="123456"
-                    maxlength="6"
-                    class="w-full px-3.5 py-2 text-sm text-center font-mono tracking-widest border border-slate-200 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30"
-                  />
-                  <button @click="verifyMfaEnrollment" type="button" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium py-2.5 rounded-lg transition">
-                    Verifikasi & Aktifkan
+                <div v-else class="space-y-3">
+                  <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Tingkatkan keamanan akun admin Anda menggunakan aplikasi Authenticator (Google Authenticator, Authy, dll).
+                  </p>
+
+                  <div v-if="mfaEnrollmentData" class="space-y-3 pt-2">
+                    <div class="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center text-center">
+                      <div class="bg-white p-2 rounded-lg shadow-xs mb-2">
+                        <img :src="mfaEnrollmentData.qrCode" alt="QR Code 2FA" class="w-36 h-36" />
+                      </div>
+                      <span class="text-[11px] text-slate-500 dark:text-slate-400 break-all">Secret: {{ mfaEnrollmentData.secret }}</span>
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Masukkan Kode 6 Digit</label>
+                      <input type="text" v-model="enrollCode" placeholder="123456" maxlength="6" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 tracking-widest text-center" />
+                    </div>
+                    <button @click="verifyMfaEnrollment" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium py-2 rounded-lg transition">
+                      Verifikasi & Aktifkan
+                    </button>
+                  </div>
+
+                  <button v-else @click="startMfaEnrollment" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium py-2.5 rounded-lg transition flex items-center justify-center gap-2">
+                    <QrCode class="w-4 h-4" />
+                    Mulai Setup 2FA
                   </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
