@@ -407,9 +407,8 @@ const handleSaveProject = async () => {
     }
 
     if (editingProjectId.value) {
-      showStatus(projectForm.demo_url)
       await updateProject(editingProjectId.value, payload)
-      // showStatus('Proyek berhasil diperbarui.')
+      showStatus('Proyek berhasil diperbarui.')
     } else {
       await addProject(payload)
       showStatus('Proyek berhasil ditambahkan.')
