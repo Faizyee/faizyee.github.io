@@ -193,7 +193,7 @@ const editingProjectId = ref<number | null>(null)
 const projectForm = reactive({
   title: '',
   description: '',
-  tech_stack_raw: '',
+  tech_stack: '',
   demo_url: '',
   repo_url: '',
   cover_image: ''
@@ -393,22 +393,23 @@ const handleSaveProject = async () => {
   if (!projectForm.title) return showStatus('Judul proyek harus diisi.', 'error')
 
   try {
-    const techArray = projectForm.tech_stack_raw
-      ? projectForm.tech_stack_raw.split(',').map(s => s.trim()).filter(Boolean)
+    const techArray = projectForm.tech_stack
+      ? projectForm.tech_stack.split(',').map(s => s.trim()).filter(Boolean)
       : []
 
     const payload = {
       title: projectForm.title,
       description: projectForm.description,
       tech_stack: techArray,
-      demo_url: projectForm.demo_url || undefined,
-      repo_url: projectForm.repo_url || undefined,
-      cover_image: projectForm.cover_image || undefined
+      demo_url: projectForm.demo_url,
+      repo_url: projectForm.repo_url,
+      cover_image: projectForm.cover_image
     }
 
     if (editingProjectId.value) {
+      showStatus(projectForm.demo_url)
       await updateProject(editingProjectId.value, payload)
-      showStatus('Proyek berhasil diperbarui.')
+      // showStatus('Proyek berhasil diperbarui.')
     } else {
       await addProject(payload)
       showStatus('Proyek berhasil ditambahkan.')
@@ -425,7 +426,7 @@ const editProject = (project: Project) => {
   editingProjectId.value = project.id ?? null
   projectForm.title = project.title
   projectForm.description = project.description || ''
-  projectForm.tech_stack_raw = project.tech_stack ? project.tech_stack.join(', ') : ''
+  projectForm.tech_stack = project.tech_stack ? project.tech_stack.join(', ') : ''
   projectForm.demo_url = project.demo_url || ''
   projectForm.repo_url = project.repo_url || ''
   projectForm.cover_image = project.cover_image || ''
@@ -438,7 +439,7 @@ const resetProjectForm = () => {
   Object.assign(projectForm, {
     title: '',
     description: '',
-    tech_stack_raw: '',
+    tech_stack: '',
     demo_url: '',
     repo_url: '',
     cover_image: ''
@@ -514,7 +515,7 @@ const handleSaveBlog = async () => {
       title: blogForm.title,
       slug: blogForm.slug,
       content: blogForm.content,
-      cover_image: blogForm.cover_image || undefined,
+      cover_image: blogForm.cover_image,
       is_published: blogForm.is_published
     }
 
@@ -830,7 +831,7 @@ onMounted(() => {
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Tech Stack (pisahkan koma)</label>
-                  <input type="text" v-model="projectForm.tech_stack_raw" placeholder="Vue, Tailwind, Supabase" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" />
+                  <input type="text" v-model="projectForm.tech_stack" placeholder="Vue, Tailwind, Supabase" class="w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:border-emerald-600 focus:outline-none transition bg-slate-50/30 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100" />
                 </div>
               </div>
               <div>
